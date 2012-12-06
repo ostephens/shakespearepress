@@ -42,9 +42,9 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 			$paras = $xpath->evaluate($xpath_paras,$scene);
 			foreach($paras as $para) {
 				$content = "";
-				$speaking = $xpath->evaluate($xpath_character,$para)->nodeValue;
+				$speaking = $xpath->evaluate($xpath_character,$para)->item(0)->nodeValue;
 				$content .= "<strong>".$speaking."</strong>";
-				$para_no = $xpath->evaluate($xpath_paranum,$para)->nodeValue;
+				$para_no = $xpath->evaluate($xpath_paranum,$para)->item(0)->nodeValue;
 				$lines = $xpath->evaluate($xpath_text,$para);
 				$content .= "<p>";
 				foreach($lines as $line) {
@@ -54,6 +54,7 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 				$title = "Act ".$act_no.", Scene ".$scene_no.", Paragraph ".$para_no;
 				$name = $act_no."-".$scene_no."-".$para_no;
 				postPara($title,$name,$content,$act_no,$scene_no,$speaking);
+				exit;
 			}
 		}
 	}	
@@ -65,7 +66,7 @@ function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
 			'post_title' => $title,
 			'post_content' => convert_chars($content),
 			'post_name' => $name,
-			'tags_input'      => 'Act {$act_no}, Scene {$scene_no}, {$speaking}'
+			'tags_input'      => array("Act ".$act_no,"Scene ".$scene_no, $speaking)
 		    //Default field values will do for the rest - so we don't need to worry about these - see
 			//http://codex.wordpress.org/Function_Reference/wp_insert_post
 	);
