@@ -60,16 +60,12 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 
 }
 
-function postPara($title,$name,$content,$act_no,$scene_no,$speaking)
-	$act_tag = "Act ".$act_no';
-	$scene_tag = "Scene ".$scene_no;
-	$speak_tag = $speaking;
-	$tags = "'".$act_tag.",".$scene_tag.",".$speak_tag."'";
+function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
 	$new_post = array(
 			'post_title' => $title,
 			'post_content' => convert_chars($content),
 			'post_name' => $name,
-			'tags_input'      => $tags
+			'tags_input'      => 'Act {$act_no}, Scene {$scene_no}, {$speaking}'
 		    //Default field values will do for the rest - so we don't need to worry about these - see
 			//http://codex.wordpress.org/Function_Reference/wp_insert_post
 	);
