@@ -42,8 +42,12 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 			$paras = $xpath->evaluate($xpath_paras,$scene);
 			foreach($paras as $para) {
 				$content = "";
-				$speaking = $xpath->evaluate($xpath_character,$para)->item(0)->nodeValue;
-				$content .= "<strong>".$speaking."</strong>";
+				if ($xpath->evaluate($xpath_character,$para)->item(0)->nodeValue != "xxx") {
+ 					$speaking = strtoupper($xpath->evaluate($xpath_character,$para)->item(0)->nodeValue);
+					$content .= "<strong>".$speaking."</strong>";				
+				} else {
+					$speaking = "";
+				}
 				$para_no = $xpath->evaluate($xpath_paranum,$para)->item(0)->nodeValue;
 				$lines = $xpath->evaluate($xpath_text,$para);
 				$content .= "<p>";
@@ -53,8 +57,10 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 				$content .= "</p>";
 				$title = "Act ".$act_no.", Scene ".$scene_no.", Paragraph ".$para_no;
 				$name = $act_no."-".$scene_no."-".$para_no;
+				if ($act_no <> 1) { 
+					return;
+				}
 				postPara($title,$name,$content,$act_no,$scene_no,$speaking);
-				exit;
 			}
 		}
 	}	
