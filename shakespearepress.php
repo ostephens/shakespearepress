@@ -26,6 +26,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
+if(@is_file(ABSPATH.'/wp-content/plugins/shakespearepress/shakespearepress_functions.php')) {
+    include_once(ABSPATH.'/wp-content/plugins/shakespearepress/shakespearepress_functions.php'); 
+}
 
 /////////// set up activation and deactivation stuff
 register_activation_hook(__FILE__,'shakespearepress_install');
