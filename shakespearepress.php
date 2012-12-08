@@ -26,8 +26,15 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
-if(@is_file(ABSPATH.'/wp-content/plugins/shakespearepress/shakespearepress_functions.php')) {
-    include_once(ABSPATH.'/wp-content/plugins/shakespearepress/shakespearepress_functions.php'); 
+// Path to ShakespearePress plugin
+if ( !defined( 'SP_PLUGIN_DIR' ) ) {
+	define( 'SP_PLUGIN_DIR', WP_PLUGIN_DIR . '/shakespearepress' );
+}
+// Setup the ShakespearePress theme directory
+register_theme_directory( SP_PLUGIN_DIR . '/sp-themes' );
+
+if(@is_file( SP_PLUGIN_DIR.'/shakespearepress_functions.php')) {
+    include_once(SP_PLUGIN_DIR.'/shakespearepress_functions.php'); 
 }
 
 /////////// set up activation and deactivation stuff
@@ -40,6 +47,8 @@ function shakespearepress_install() {
     deactivate_plugins(basename(__FILE__)); // deactivate plugin
     wp_die("This plugin requires WordPress Version 3 or higher.");
   } else {
+	switch_theme( 'clean-home-sp', 'clean-home-sp' );
+	createShakespeare();
 	$play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml";
     populatePlay($play_url);
  }
