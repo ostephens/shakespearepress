@@ -1,7 +1,7 @@
 <?php
 /**
  * @package WordPress
- * @subpackage Clean Home
+ * @subpackage Clean Home SP
  */
 ?>
 <?php get_header(); ?>
