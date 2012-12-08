@@ -8,7 +8,14 @@
  * TO DO: create a post per paragraph in play
  */
 function createShakespeare() {
-	// Create a User ID for William Shakespeare;
+	$user_name = 'wshakespeare';
+	$user_id = username_exists( $user_name );
+	if ( !$user_id ) {
+		$random_password = wp_generate_password( $length=8, $include_standard_special_chars=false );
+		$user_id = wp_create_user( $user_name, $random_password );
+		wp_update_user( array ('ID' => $user_id, 'user_firstname' => 'William', 'user_lastname' => 'Shakespeare'));
+	} 
+	
 }
 
 function createCTax() {
@@ -37,6 +44,7 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 	foreach($acts as $act) {
 		$act_no = $act->attributes->getNamedItem("number")->value;
 		$scenes = $xpath->evaluate($xpath_scene,$act);
+		
 		foreach($scenes as $scene) {
 			$scene_no = $scene->attributes->getNamedItem("number")->value;
 			$paras = $xpath->evaluate($xpath_paras,$scene);
@@ -68,10 +76,14 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 }
 
 function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
+	$author = get_user_by('user_login', 'wshakespeare');
+	$authid = $author->ID;
 	$new_post = array(
 			'post_title' => $title,
 			'post_content' => convert_chars($content),
 			'post_name' => $name,
+			'post_author' => $authid,
+			'post_status' => 'publish',
 			'tags_input'      => array("Act ".$act_no,"Scene ".$scene_no, $speaking)
 		    //Default field values will do for the rest - so we don't need to worry about these - see
 			//http://codex.wordpress.org/Function_Reference/wp_insert_post
@@ -88,11 +100,8 @@ function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
 		return false;
 	}
 	else {
-		add_post_meta($post_id, 'object_title', $title);
-		// add_post_meta($post_id, 'object_maker', $maker);
-		// add_post_meta($post_id, 'object_date', $date);
-		add_post_meta($post_id, 'object_provider', $provider);
-		//other custom fields here if required
+		//add custom fields here if required e.g.
+		//add_post_meta($post_id, 'object_title', $title);
 	}
 	return $post_id;
 }
