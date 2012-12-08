@@ -37,7 +37,7 @@ Template: clean-home
 }
 
 
-.usecase-container {
+.act-container {
 	border: none;
 	background: rgb(5,10,10);
 	padding:10px 0px 50px ;
@@ -46,19 +46,19 @@ Template: clean-home
 	color: white;
 }
 
-.usecase-container .hentry {
+.act-container .hentry {
 	margin:0;
 	padding:10px 20px 20px 20px;
 }
 
-.usecase-container p {
+.act-container p {
 	margin: 10px 10px 10px 10px;
 	background: rgb(255,255,255);
 	color:black;
 }
 
 /* --- */
-.section-container {
+.scene-container {
 	padding:0;
 	width:580px;
 	margin:20px 20px 0 20px ;
@@ -66,57 +66,9 @@ Template: clean-home
 	color: rgb(5,10,10);
 }
 
-
-/* -COLORCODE CONTAINERS- */
-#aim25.usecase-container {
-	background: top right no-repeat rgb(211,44,53);
-}
-
-#archives-hub.usecase-container {
-	background: top right no-repeat rgb(230,137,60);
-}
-
-#bluk.usecase-container {
-	background: top right no-repeat rgb(132,187,75);
-}
-
-#cul.usecase-container {
-	background: top right no-repeat rgb(125,48,119);
-}
-
-#oclcwc.usecase-container {
-	background: top right no-repeat rgb(60,161,203);
-}
-
-#oup.usecase-container {
-	background: top right no-repeat rgb(125,48,119);
-}
-
-#rijksmuseum.usecase-container {
-	background: top right no-repeat rgb(45,52,115);
-}
-
-#usussex.usecase-container {
-	background: top right no-repeat rgb(211,44,53);
-}
-
-#vanda.usecase-container {
-	background: top right no-repeat rgb(230,137,60);
-}
-
-#wellcome.usecase-container {
-	background: top right no-repeat rgb(132,187,75);
-}
-
-.usecase-description {
-
-padding: 0 20px;
-font-size: 1.1em;
-}
-
 /* ---COLORCODE USECASE TITLES---- */
 
-h2.usecase-title {
+h2.act-title {
 	color:rgb(255,255,255);
 	padding: 0 20px;
 	margin: 3px 0 3px 0;
@@ -124,49 +76,10 @@ h2.usecase-title {
 	width:580px;
 }
 
-#aim25.usecase-container h2 {
-	background: rgb(211,44,53);
-}
-
-#archives-hub.usecase-container h2 {
-	background: rgb(230,137,60);
-}
-
-#bluk.usecase-container h2 {
-	background: rgb(132,187,75);
-}
-
-#cul.usecase-container h2 {
-	background: rgb(125,48,119);
-}
-
-#oclcwc.usecase-container h2 {
-	background:rgb(60,161,203);
-}
-
-#oup.usecase-container h2 {
-	background: rgb(125,48,119);
-}
-
-#rijksmuseum.usecase-container h2 {
-	background: rgb(45,52,115);
-}
-
-#usussex.usecase-container h2 {
-	background: rgb(211,44,53);
-}
-
-#vanda.usecase-container h2 {
-	background: rgb(230,137,60);
-}
-
-#wellcome.usecase-container h2 {
-	background: rgb(132,187,75);
-}
 
 /* ---COLORCODE THEME TITLES---- */
 
-.section-title {
+.scene-title {
 	color:rgb(255,255,255);
 	padding: 3px 20px;
 	font-size: 20px;
@@ -175,46 +88,6 @@ h2.usecase-title {
 	margin-top: -10px !important; /* the !important forces override of the clean-home style for this element */
 }
 
-.usecase-container h1.section-title {
+.act-container h3.scene-title {
 	background: rgb(0,0,0);
-}
-
-#aim25.usecase-container h1.section-title {
-	background: rgb(211,44,53);
-}
-
-#archives-hub.usecase-container h1.section-title {
-	background: rgb(230,137,60);
-}
-
-#bluk.usecase-container h1.section-title {
-	background: rgb(132,187,75);
-}
-
-#cul.usecase-container h1.section-title {
-	background: rgb(125,48,119);
-}
-
-#oclcwc.usecase-container h1.section-title {
-	background: rgb(60,161,203);
-}
-
-#oup.usecase-container h1.section-title {
-	background: rgb(125,48,119);
-}
-
-#rijksmuseum.usecase-container h1.section-title {
-	background: rgb(45,52,115);
-}
-
-#usussex.usecase-container h1.section-title {
-	background: rgb(211,44,53);
-}
-
-#vanda.usecase-container h1.section-title {
-	background: rgb(230,137,60);
-}
-
-#wellcome.usecase-container h1.section-title {
-	background: rgb(132,187,75);
 }
