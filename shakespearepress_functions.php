@@ -44,9 +44,9 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 	foreach($acts as $act) {
 		$act_no = $act->attributes->getNamedItem("number")->value;
 		$scenes = $xpath->evaluate($xpath_scene,$act);
-		
 		foreach($scenes as $scene) {
 			$scene_no = $scene->attributes->getNamedItem("number")->value;
+			echo "Starting Act ".$act_no.", Scene ".$scene_no;
 			$paras = $xpath->evaluate($xpath_paras,$scene);
 			foreach($paras as $para) {
 				$content = "";
@@ -67,11 +67,9 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 				$content .= "</p>";
 				$title = "Act ".$act_no.", Scene ".$scene_no.", Paragraph ".$para_no;
 				$name = $act_no."-".$scene_no."-".$para_no;
-				if ($act_no <> 1) { 
-					return;
-				}
 				postPara($title,$name,$content,$act_no,$scene_no,$speaking);
 			}
+		echo "Finishing Act ".$act_no.", Scene ".$scene_no;
 		}
 	}	
 
@@ -105,6 +103,43 @@ function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
 		//add_post_meta($post_id, 'object_title', $title);
 	}
 	return $post_id;
+}
+
+function shakespearepress_plugin_menu() {
+	add_options_page('Shakespeare Pres settings page', 'Shakespeare Press settings', 'manage_options', __FILE__, 'shakespearepress_settings_page');
+}
+
+function shakespearepress_register_settings() {
+	// register settings - array, not individual
+	register_setting('shakespearepress-settings-group', 'shakespearepress_settings_values');
+}
+
+// write out the plugin options form. Form field name must match option name.
+// add other options here as necessary
+// just a placeholder in case
+
+function shakespearepress_settings_page() {
+  
+	if (!current_user_can('manage_options'))  {
+	  wp_die( __('You do not have sufficient permissions to access this page.') );
+	}
+
+	if( isset($_POST[ 'playurl' ]) ) {
+		populatePlay($_POST[ 'playurl' ]);
+	}
+
+	?>
+	<div>
+		<h2><?php _e('shakespearepress plugin options', 'shakespearepress-plugin') ?></h2>
+		<form method="post" action="">
+			<select name="playurl">
+				<option value="http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml">Much Ado About Nothing</option>
+				<option value="http://wwsrv.edina.ac.uk/wworld/static/plays/King_Lear.xml">King Lear</option>
+			</select>
+			<p class="submit"><input type="submit" class="button-primary" value=<?php _e('Save changes', 'shakespearepress-plugin') ?> /></p>
+		</form>
+	</div>
+	<?php
 }
 
 ?>
