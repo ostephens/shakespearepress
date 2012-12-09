@@ -50,7 +50,7 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 		$scenes = $xpath->evaluate($xpath_scene,$act);
 		foreach($scenes as $scene) {
 			$scene_no = $scene->attributes->getNamedItem("number")->value;
-			add_action('admin_notices', 'loadProgress');
+			trigger_error("Starting Act ".$act_no.", Scene ".$scene_no,E_USER_ERROR);
 			$paras = $xpath->evaluate($xpath_paras,$scene);
 			foreach($paras as $para) {
 				$content = "";
@@ -73,6 +73,7 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 				$name = $act_no."-".$scene_no."-".$para_no;
 				postPara($title,$name,$content,$act_no,$scene_no,$speaking);
 			}
+		trigger_error("Finishing Act ".$act_no.", Scene ".$scene_no,E_USER_ERROR);
 		}
 	}	
 
@@ -142,8 +143,8 @@ function shakespearepress_settings_page() {
 		<h2><?php _e('shakespearepress plugin options', 'shakespearepress-plugin') ?></h2>
 		<form method="post" action="">
 			<select name="playurl">
-				<option value="http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml">Much Ado About Nothing</option>
-				<option value="http://wwsrv.edina.ac.uk/wworld/static/plays/King_Lear.xml">King Lear</option>
+				<option value="http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml">Much Ado About Nothing (Act 1 only)</option>
+				<option value="http://wwsrv.edina.ac.uk/wworld/static/plays/King_Lear.xml">King Lear (Act 1 only)</option>
 			</select>
 			<p class="submit"><input type="submit" class="button-primary" value=<?php _e('Save changes', 'shakespearepress-plugin') ?> /></p>
 		</form>
