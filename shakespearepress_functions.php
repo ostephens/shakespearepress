@@ -163,7 +163,7 @@ function dsData($name){
 	}
 	$html .= "</ul>";
 	$html .= "</div>";
-	
+	return $html;
 }
 
 function shakespearepress_plugin_menu() {
