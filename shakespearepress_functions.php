@@ -52,7 +52,9 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 				$content = "";
 				if ($xpath->evaluate($xpath_character,$para)->item(0)->nodeValue != "xxx") {
  					$speaking = strtoupper($xpath->evaluate($xpath_character,$para)->item(0)->nodeValue);
-					$content .= "<strong>".$speaking."</strong>";				
+					$content .= '<div itemscope itemtype="http://schema.org/Person">';
+					$content .= '<strong><span itemprop="name">".$speaking."</span></strong>';
+					$content .= '</div>';
 				} else {
 					$speaking = "";
 				}
@@ -76,7 +78,7 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 }
 
 function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
-	$author = get_user_by('user_login', 'wshakespeare');
+	$author = username_exists( 'wshakespeare' );
 	$authid = $author->ID;
 	$new_post = array(
 			'post_title' => $title,
