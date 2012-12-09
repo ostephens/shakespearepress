@@ -5,7 +5,7 @@
  */
 
 /*
- * TO DO: create a post per paragraph in play
+ * TO DO: Add pages per character
  */
 function createShakespeare() {
 	$user_name = 'wshakespeare';
@@ -16,10 +16,6 @@ function createShakespeare() {
 		wp_update_user( array ('ID' => $user_id, 'user_firstname' => 'William', 'user_lastname' => 'Shakespeare'));
 	} 
 	
-}
-
-function createCTax() {
-	// Create custom taxonomies	
 }
 
 function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml") {
@@ -50,7 +46,6 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 		$scenes = $xpath->evaluate($xpath_scene,$act);
 		foreach($scenes as $scene) {
 			$scene_no = $scene->attributes->getNamedItem("number")->value;
-			trigger_error("Starting Act ".$act_no.", Scene ".$scene_no,E_USER_ERROR);
 			$paras = $xpath->evaluate($xpath_paras,$scene);
 			foreach($paras as $para) {
 				$content = "";
@@ -71,16 +66,14 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 				$content .= "</p>";
 				$title = "Act ".$act_no.", Scene ".$scene_no.", Paragraph ".$para_no;
 				$name = $act_no."-".$scene_no."-".$para_no;
+				if ($act_no <> 1) { 
+					return;
+				}
 				postPara($title,$name,$content,$act_no,$scene_no,$speaking);
 			}
-		trigger_error("Finishing Act ".$act_no.", Scene ".$scene_no,E_USER_ERROR);
 		}
 	}	
 
-}
-
-function loadProgress() {
-	echo "Loading play from xml";
 }
 
 function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
