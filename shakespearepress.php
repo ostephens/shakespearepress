@@ -58,7 +58,7 @@ function shakespearepress_install() {
 register_deactivation_hook(__FILE__,'shakespearepress_uninstall');
 
 function shakespearepress_uninstall() {
-  // do stuff
+	wp_delete_user( username_exists( 'wshakespeare' ));
 }
 
 /*
