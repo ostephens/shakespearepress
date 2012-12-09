@@ -11,6 +11,11 @@ Template: clean-home
 	height: 125px;
 }
 
+.post-meta {
+	text-align: right;
+	font-size: small;
+}
+
 #blurb {
 	font-family: Georgia, serif;
 	height: auto;
@@ -66,7 +71,7 @@ Template: clean-home
 	color: rgb(5,10,10);
 }
 
-/* ---COLORCODE USECASE TITLES---- */
+/* ---ACT TITLES---- */
 
 h2.act-title {
 	color:rgb(255,255,255);
