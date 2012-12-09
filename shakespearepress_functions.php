@@ -24,8 +24,12 @@ function createCTax() {
 
 function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml") {
 // Using default of Much ado about nothing from http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml  
-
-	$xml = file_get_contents($play_url);
+	if( !class_exists( 'WP_Http' ) ) {
+	    include_once( ABSPATH . WPINC. '/class-http.php' );
+	}
+	$request = new WP_Http;
+	$result = $request->request( $play_url );
+	$xml = $result['body'];
 	// Create DOMDocument and load the xml to parse
 	$doc = new DOMDocument();
 	$doc->loadXML($xml);
@@ -79,6 +83,7 @@ function loadProgress() {
 }
 
 function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
+	set_time_limit(0);
 	$author = username_exists( 'wshakespeare' );
 	$new_post = array(
 			'post_title' => $title,
