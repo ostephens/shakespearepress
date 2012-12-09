@@ -46,7 +46,7 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 		$scenes = $xpath->evaluate($xpath_scene,$act);
 		foreach($scenes as $scene) {
 			$scene_no = $scene->attributes->getNamedItem("number")->value;
-			echo "Starting Act ".$act_no.", Scene ".$scene_no;
+			add_action('admin_notices', 'loadProgress');
 			$paras = $xpath->evaluate($xpath_paras,$scene);
 			foreach($paras as $para) {
 				$content = "";
@@ -69,10 +69,13 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 				$name = $act_no."-".$scene_no."-".$para_no;
 				postPara($title,$name,$content,$act_no,$scene_no,$speaking);
 			}
-		echo "Finishing Act ".$act_no.", Scene ".$scene_no;
 		}
 	}	
 
+}
+
+function loadProgress() {
+	echo "Loading play from xml";
 }
 
 function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
@@ -125,6 +128,7 @@ function shakespearepress_settings_page() {
 	}
 
 	if( isset($_POST[ 'playurl' ]) ) {
+		// to stop multiple plays populating delete all wshakespeare posts first?
 		populatePlay($_POST[ 'playurl' ]);
 	}
 
