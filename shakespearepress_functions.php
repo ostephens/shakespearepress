@@ -53,7 +53,7 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 				if ($xpath->evaluate($xpath_character,$para)->item(0)->nodeValue != "xxx") {
  					$speaking = strtoupper($xpath->evaluate($xpath_character,$para)->item(0)->nodeValue);
 					$content .= '<div itemscope itemtype="http://schema.org/Person">';
-					$content .= '<strong><span itemprop="name">".$speaking."</span></strong>';
+					$content .= '<strong><span itemprop="name">'.$speaking.'</span></strong>';
 					$content .= '</div>';
 				} else {
 					$speaking = "";
