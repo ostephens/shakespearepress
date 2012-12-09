@@ -107,6 +107,65 @@ function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
 	return $post_id;
 }
 
+function createCharaterpage($character = "BEATRICE") {
+	$author = username_exists( 'wshakespeare' );
+	$name = strtolower($character);
+	$title = ucfirst($name);
+	$content = "";
+	// Get content from Designing Shakespeare
+	$dscontent = dsData($name);
+	$content .= $dscontent;
+	$new_post = array(
+			'post_title' => $title,
+			'post_content' => convert_chars($content),
+			'post_name' => $name,
+			'post_author' => $author,
+			'post_status' => 'publish',
+			'post_type' => 'page'
+		    //Default field values will do for the rest - so we don't need to worry about these - see
+			//http://codex.wordpress.org/Function_Reference/wp_insert_post
+	);
+	
+	$post_id = wp_insert_post($new_post);
+
+	if (is_object($post_id)) {
+		//error - what to do?
+		return false;
+	}
+	elseif ($post_id == 0) {
+		//error - what to do?
+		return false;
+	}
+	else {
+		//add custom fields here if required e.g.
+		//add_post_meta($post_id, 'object_title', $title);
+	}
+	return $post_id;
+}
+
+// Function to retrieve scraped data from Designing Shakespeare database
+function dsData($name){
+	//Going to return some html at the end
+	$html = "";
+	if( !class_exists( 'WP_Http' ) ) {
+	    include_once( ABSPATH . WPINC. '/class-http.php' );
+	}
+	$request = new WP_Http;
+	$ds_url = "https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=jsondict&name=designing_shakespeare_cast_lists&query=select%20*%20from%20%60swdata%60%20where%20%60role%60%20like%20%22%25". $name ."%25%22";
+	$result = $request->request( $ds_url );
+	$json = $result['body'];
+	$performances = json_decode($json);
+	$html .= "<div id='design'>";
+	$html .= ucfirst($name)." has been played by the actors listed below. The data is taken from the 'Designing Shakespeare' project which focuses on performances in London, UK. Details of the relevant performance are given here, and linked to the full record at the Designing Shakespeare site which usually includes images of the production.";
+	$html .= "<ul>";
+	foreach($performances as $performance) {
+		$html .= "<li>".$performance->actor." (<a href='".$performance->play_uri."'>".$performance->performance."</a>)</li>";
+	}
+	$html .= "</ul>";
+	$html .= "</div>";
+	
+}
+
 function shakespearepress_plugin_menu() {
 	add_options_page('Shakespeare Pres settings page', 'Shakespeare Press settings', 'manage_options', __FILE__, 'shakespearepress_settings_page');
 }
@@ -127,8 +186,12 @@ function shakespearepress_settings_page() {
 	}
 
 	if( isset($_POST[ 'playurl' ]) ) {
-		// to stop multiple plays populating delete all wshakespeare posts first?
+		// suppress if play already set?
 		populatePlay($_POST[ 'playurl' ]);
+	}
+	
+	if( issset($_POST[ 'createCPs' ])) {
+		createCharacterPage();
 	}
 
 	?>
