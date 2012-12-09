@@ -190,7 +190,7 @@ function shakespearepress_settings_page() {
 		populatePlay($_POST[ 'playurl' ]);
 	}
 	
-	if( issset($_POST[ 'createCPs' ])) {
+	if( isset($_POST[ 'createCPs' ])) {
 		createCharacterPage();
 	}
 
