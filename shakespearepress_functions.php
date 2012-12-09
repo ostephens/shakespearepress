@@ -159,7 +159,7 @@ function dsData($name){
 	$html .= ucfirst($name)." has been played by the actors listed below. The data is taken from the 'Designing Shakespeare' project which focuses on performances in London, UK. Details of the relevant performance are given here, and linked to the full record at the Designing Shakespeare site which usually includes images of the production.";
 	$html .= "<ul>";
 	foreach($performances as $performance) {
-		$html .= "<li>".$performance->actor." (<a href='".$performance->play_uri."'>".$performance->performance."</a>)</li>";
+		$html .= "<li>".$performance->actor." (<a href='".$performance->performance_uri."'>".$performance->performance."</a>)</li>";
 	}
 	$html .= "</ul>";
 	$html .= "</div>";
