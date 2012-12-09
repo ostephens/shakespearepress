@@ -107,7 +107,7 @@ function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
 	return $post_id;
 }
 
-function createCharaterpage($character = "BEATRICE") {
+function createCharacterpage($character = "BEATRICE") {
 	$author = username_exists( 'wshakespeare' );
 	$name = strtolower($character);
 	$title = ucfirst($name);
