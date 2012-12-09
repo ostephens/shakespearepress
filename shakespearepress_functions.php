@@ -79,12 +79,11 @@ function populatePlay($play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ad
 
 function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
 	$author = username_exists( 'wshakespeare' );
-	$authid = $author->ID;
 	$new_post = array(
 			'post_title' => $title,
 			'post_content' => convert_chars($content),
 			'post_name' => $name,
-			'post_author' => $authid,
+			'post_author' => $author,
 			'post_status' => 'publish',
 			'tags_input'      => array("Act ".$act_no,"Scene ".$scene_no, $speaking)
 		    //Default field values will do for the rest - so we don't need to worry about these - see
