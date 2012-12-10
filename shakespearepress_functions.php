@@ -113,8 +113,11 @@ function createCharacterpage($character = "BEATRICE") {
 	$title = ucfirst($name);
 	$content = "";
 	// Get content from Designing Shakespeare
-	$dscontent = dsData($name);
+	$dscontent = dsData($name); // Do we need more than name? Play?
 	$content .= $dscontent;
+	// Get content from Will's World Registry
+	$wwcontent = wwData($name); // Do we need more than name? Play?
+	//$content .= $wwcontent;
 	$new_post = array(
 			'post_title' => $title,
 			'post_content' => convert_chars($content),
@@ -166,15 +169,44 @@ function dsData($name){
 	return $html;
 }
 
+function wwData($name) {
+	//Going to return some html at the end
+	$html = "";
+	if( !class_exists( 'WP_Http' ) ) {
+	    include_once( ABSPATH . WPINC. '/class-http.php' );
+	}
+	$request = new WP_Http;
+	$ww_url = "";
+}
+
 function shakespearepress_plugin_menu() {
-	add_options_page('Shakespeare Pres settings page', 'Shakespeare Press settings', 'manage_options', __FILE__, 'shakespearepress_settings_page');
+	add_options_page('ShakespearePress settings page', 'ShakespearePress settings', 'manage_options', __FILE__, 'shakespearepress_settings_page');
 }
 
 function shakespearepress_register_settings() {
-	// register settings - array, not individual
-	register_setting('shakespearepress-settings-group', 'shakespearepress_settings_values');
+	// first option will contain name of the play and the number of acts
+	register_setting('shakespearepress-settings-group', 'shakespearepress-playoptions');
+	// second option will contain an array of charater names
+	register_setting('shakespearepress-settings-group', 'shakespearepress-characters');
+	
+	add_settings_section('shakespearepress-main', 'Main Settings', 'shakespearepress_section_text', 'shakespearepress');
+	// Need to work out fields below - play, acts, chars - just need enough to display Next buttons
+	add_settings_field('play-name', 'Play to import', 'play_choice', 'shakespearepress', 'shakespearepress-main');
 }
 
+function shakespearepress_section_text(){
+	//Just HTML to go at top of options page
+	echo '<p>Main description of this section here.</p>';
+}
+
+function play_choice(){
+	?>
+	<select name="playurl">
+		<option value="http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml">Much Ado About Nothing</option>
+		<option value="http://wwsrv.edina.ac.uk/wworld/static/plays/King_Lear.xml">King Lear</option>
+	</select>
+	<?php
+}
 // write out the plugin options form. Form field name must match option name.
 // add other options here as necessary
 // just a placeholder in case
@@ -197,11 +229,10 @@ function shakespearepress_settings_page() {
 	?>
 	<div>
 		<h2><?php _e('shakespearepress plugin options', 'shakespearepress-plugin') ?></h2>
+		
 		<form method="post" action="">
-			<select name="playurl">
-				<option value="http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml">Much Ado About Nothing (Act 1 only)</option>
-				<option value="http://wwsrv.edina.ac.uk/wworld/static/plays/King_Lear.xml">King Lear (Act 1 only)</option>
-			</select>
+			<?php settings_fields('shakespearepress-settings-group'); ?>
+			<?php do_settings_sections('shakespearepress'); ?>
 			<p class="submit"><input type="submit" class="button-primary" value=<?php _e('Save changes', 'shakespearepress-plugin') ?> /></p>
 		</form>
 	</div>
