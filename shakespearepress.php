@@ -62,6 +62,8 @@ function shakespearepress_uninstall() {
 	delete_option( 'shakespearepress-playurl' );
 	delete_option( 'shakespearepress-playoptions' );
 	delete_option( 'shakespearepress-characters' );
+	delete_option( 'theme_mods_clean-home' );
+	switch_theme( 'twentyten','twentyten');
 	wp_delete_user( username_exists( 'wshakespeare' ));
 }
 
