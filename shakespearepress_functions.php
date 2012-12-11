@@ -40,36 +40,38 @@ function detailsofPlay() {
 		$total_acts = $acts->length;
 		$play_opts = array( 'name'=>$play_name, 'total_acts'=>$total_acts );
 		
-		$title = "Home";
-		$author = username_exists( 'wshakespeare' );
-		$ddg_url = "http://api.duckduckgo.com/?q=".urlencode($play_name)."&format=json";
-		$result = $request->request('$ddg_url');
-		$json = $result['body'];
-		$ddg = json_decode($json);
-		$content = "<h2>Summary</h2><p>".$ddg->AbstractText."<br /><strong>Source: <a href=\"".$ddg->AbstractURL."\">".$ddg->AbstractSource."</a> via <a href=\"http://duckduckgo.com\">DuckDuckGo</a></p>";
-		$new_post = array(
-				'post_title' => $title,
-				'post_content' => convert_chars($content),
-				'post_name' => $name,
-				'post_author' => $author,
-				'post_status' => 'publish',
-				'post_type' => 'page'
-			    //Default field values will do for the rest - so we don't need to worry about these - see
-				//http://codex.wordpress.org/Function_Reference/wp_insert_post
-		);
+		$title = "Summary";
+		if (get_page_by_title($title) == NULL) {
+			$author = username_exists( 'wshakespeare' );
+			$ddg_url = "http://api.duckduckgo.com/?q=".urlencode($play_name)."&format=json";
+			$result = $request->request($ddg_url);
+			$json = $result['body'];
+			$ddg = json_decode($json);
+			$content = "<p>".$ddg->AbstractText."<br /><strong>Source: <a href=\"".$ddg->AbstractURL."\">".$ddg->AbstractSource."</a> via <a href=\"http://duckduckgo.com\">DuckDuckGo</a></p>";
+			$new_post = array(
+					'post_title' => $title,
+					'post_content' => convert_chars($content),
+					'post_name' => $name,
+					'post_author' => $author,
+					'post_status' => 'publish',
+					'post_type' => 'page'
+				    //Default field values will do for the rest - so we don't need to worry about these - see
+					//http://codex.wordpress.org/Function_Reference/wp_insert_post
+			);
 	
-		$post_id = wp_insert_post($new_post);
-		update_option('show_on_front','page');
-		update_option('page_on_front',$post_id);
-		if (is_object($post_id)) {
-			//error - what to do?
-		}
-		elseif ($post_id == 0) {
-			//error - what to do?
-		}
-		else {
-			//add custom fields here if required e.g.
-			//add_post_meta($post_id, 'object_title', $title);
+			$post_id = wp_insert_post($new_post);
+			update_option('show_on_front','page');
+			update_option('page_on_front',$post_id);
+			if (is_object($post_id)) {
+				//error - what to do?
+			}
+			elseif ($post_id == 0) {
+				//error - what to do?
+			}
+			else {
+				//add custom fields here if required e.g.
+				//add_post_meta($post_id, 'object_title', $title);
+			}
 		}
 		
 		return $play_opts;
@@ -465,7 +467,11 @@ function current_act() {
 		$current_act = $play_options['current_act'] + 1;
 		$next_act = $current_act + 1;
 		populatePlay($current_act);
-		echo "Fetched Act ".$current_act.". Click <strong>Next</strong> to fetch Act ".$next_act;
+		if($next_act > $play_options['total_acts']) {
+			echo "Fetched Act ".$current_act."All Acts now populated.";			
+		} else {
+			echo "Fetched Act ".$current_act.". Click <strong>Next</strong> to fetch Act ".$next_act;
+		}
 	} elseif (strlen($play_options['playurl']) == 0) {
 		echo "Play not yet selected. Please click <strong>Next</strong>.";
 	} elseif (!$play_options['current_act']) {
