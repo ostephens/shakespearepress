@@ -47,10 +47,9 @@ function shakespearepress_install() {
     deactivate_plugins(basename(__FILE__)); // deactivate plugin
     wp_die("This plugin requires WordPress Version 3 or higher.");
   } else {
+	switch_theme( 'clean-home', 'clean-home' );
 	switch_theme( 'clean-home-sp', 'clean-home-sp' );
 	createShakespeare();
-	$play_url = "http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml";
-    //populatePlay($play_url);
  }
 }
 
