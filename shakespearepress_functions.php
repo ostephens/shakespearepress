@@ -431,7 +431,7 @@ function current_act() {
 		$current_act = $play_options['current_act'] + 1;
 		$next_act = $current_act + 1;
 		populatePlay($current_act);
-		echo "Fetched Act ".$current_act." Click Next to fetch Act ".$next_act;
+		echo "Fetched Act ".$current_act.". Click <strong>Next</strong> to fetch Act ".$next_act;
 	} elseif (strlen($play_options['playurl']) == 0) {
 		echo "Play not yet selected. Please click <strong>Next</strong>.";
 	} elseif (!$play_options['current_act']) {
