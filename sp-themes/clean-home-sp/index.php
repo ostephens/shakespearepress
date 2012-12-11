@@ -128,7 +128,7 @@
 			}
 	echo '</div>'; //close act-container div
 }
-if ($total_ucs === 0) {
+if ($total_acts === 0) {
 	?>
 	<h2 class="center"><?php _e( 'Not found', 'cleanhome' ); ?></h2>
 	<p class="center"><?php _e( "Sorry, but you are looking for something that isn't here.", 'cleanhome' ); ?></p>
