@@ -59,10 +59,10 @@ register_deactivation_hook(__FILE__,'shakespearepress_uninstall');
 
 function shakespearepress_uninstall() {
 	set_time_limit(0);
+	wp_delete_user( username_exists( 'wshakespeare' ));
+	switch_theme( 'twentyten','twentyten');
 	delete_option( 'shakespearepress-play' );
 	delete_option( 'theme_mods_clean-home' );
-	switch_theme( 'twentyten','twentyten');
-	wp_delete_user( username_exists( 'wshakespeare' ));
 }
 
 
