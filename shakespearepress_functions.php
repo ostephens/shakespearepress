@@ -46,13 +46,45 @@ function detailsofPlay() {
 	
 }
 
-function populatePlay($act) {
+function detailsofCharacters() {
+	$char_array = array();
+	$play_url = get_option('shakespearepress-playurl');
+	if ($play_url['url']) {
+		if( !class_exists( 'WP_Http' ) ) {
+		    include_once( ABSPATH . WPINC. '/class-http.php' );
+		}
+		$request = new WP_Http;
+		$result = $request->request( $play_url['url'] );
+		$xml = $result['body'];
+		// Create DOMDocument and load the xml to parse
+		$doc = new DOMDocument();
+		$doc->loadXML($xml);
+
+		// Create DOMXPath object so we can use XPath queries
+		$xpath = new DOMXPath($doc);
+		$xpath->registerNameSpace('xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+		$chars = $doc->getElementsByTagName("CharID");
+		foreach ($chars as $char) {
+			if($char->nodeValue != "xxx") {
+				array_push($char_array,strtolower($char->nodeValue));
+			}
+		}
+		$char_array = array_unique($char_array);
+		return $char_array;
+	} else {
+		return false;
+	}
+	
+}
+
+function populatePlay($a) {
+	set_time_limit(0);
 	$play_url = get_option('shakespearepress-playurl');
 	if( !class_exists( 'WP_Http' ) ) {
 	    include_once( ABSPATH . WPINC. '/class-http.php' );
 	}
 	$request = new WP_Http;
-	$result = $request->request( $play_url );
+	$result = $request->request( $play_url['url'] );
 	$xml = $result['body'];
 	// Create DOMDocument and load the xml to parse
 	$doc = new DOMDocument();
@@ -71,32 +103,46 @@ function populatePlay($act) {
 
 	foreach($acts as $act) {
 		$act_no = $act->attributes->getNamedItem("number")->value;
-		if ($act_no <> $act) { 
+		if ((int)$act_no <> (int)$a) { 
+			error_log('continuing');
 			continue;
 		}
+		
 		$scenes = $xpath->evaluate($xpath_scene,$act);
 		foreach($scenes as $scene) {
 			$scene_no = $scene->attributes->getNamedItem("number")->value;
 			$paras = $xpath->evaluate($xpath_paras,$scene);
 			foreach($paras as $para) {
 				$content = "";
+				$para_no = $xpath->evaluate($xpath_paranum,$para)->item(0)->nodeValue;
+				$title = "Act ".$act_no.", Scene ".$scene_no.", Paragraph ".$para_no;
+				$name = $act_no."-".$scene_no."-".$para_no;
+				$check_args=array(
+				  'name' => $name,
+				  'post_type' => 'post',
+				  'post_status' => 'publish',
+				  'numberposts' => 1
+				);
+				$check = get_posts($check_args);
+				if( $check ) {
+					continue;
+				}
 				if ($xpath->evaluate($xpath_character,$para)->item(0)->nodeValue != "xxx") {
- 					$speaking = strtoupper($xpath->evaluate($xpath_character,$para)->item(0)->nodeValue);
+ 					$speaking_arr = explode("-",strtoupper($xpath->evaluate($xpath_character,$para)->item(0)->nodeValue));
+					$speaking = $speaking_arr[0];
 					$content .= '<div itemscope itemtype="http://schema.org/Person">';
 					$content .= '<strong><span itemprop="name">'.$speaking.'</span></strong>';
 					$content .= '</div>';
 				} else {
 					$speaking = "";
 				}
-				$para_no = $xpath->evaluate($xpath_paranum,$para)->item(0)->nodeValue;
 				$lines = $xpath->evaluate($xpath_text,$para);
 				$content .= "<p>";
 				foreach($lines as $line) {
 					$content .= $line->nodeValue."<br />";
 				}
 				$content .= "</p>";
-				$title = "Act ".$act_no.", Scene ".$scene_no.", Paragraph ".$para_no;
-				$name = $act_no."-".$scene_no."-".$para_no;
+				error_log($name);
 				postPara($title,$name,$content,$act_no,$scene_no,$speaking);
 			}
 		}
@@ -105,7 +151,6 @@ function populatePlay($act) {
 }
 
 function postPara($title,$name,$content,$act_no,$scene_no,$speaking) {
-	set_time_limit(0);
 	$author = username_exists( 'wshakespeare' );
 	$new_post = array(
 			'post_title' => $title,
@@ -139,39 +184,43 @@ function createCharacterpage($character = "BEATRICE") {
 	$author = username_exists( 'wshakespeare' );
 	$name = strtolower($character);
 	$title = ucfirst($name);
+	if (get_page_by_title($title) <> NULL) return;
 	$content = "";
+	// Get WW Registry data
+	$wwcontent = wwData($name);
+	$content .= $wwcontent;
 	// Get content from Designing Shakespeare
 	$dscontent = dsData($name); // Do we need more than name? Play?
 	$content .= $dscontent;
-	// Get content from Will's World Registry
-	$wwcontent = wwData($name); // Do we need more than name? Play?
-	//$content .= $wwcontent;
-	$new_post = array(
-			'post_title' => $title,
-			'post_content' => convert_chars($content),
-			'post_name' => $name,
-			'post_author' => $author,
-			'post_status' => 'publish',
-			'post_type' => 'page'
-		    //Default field values will do for the rest - so we don't need to worry about these - see
-			//http://codex.wordpress.org/Function_Reference/wp_insert_post
-	);
+	if ($wwcontent || $dscontent) {
+		$new_post = array(
+				'post_title' => $title,
+				'post_content' => convert_chars($content),
+				'post_name' => $name,
+				'post_author' => $author,
+				'post_status' => 'publish',
+				'post_type' => 'page'
+			    //Default field values will do for the rest - so we don't need to worry about these - see
+				//http://codex.wordpress.org/Function_Reference/wp_insert_post
+		);
 	
-	$post_id = wp_insert_post($new_post);
+		$post_id = wp_insert_post($new_post);
 
-	if (is_object($post_id)) {
-		//error - what to do?
-		return false;
+		if (is_object($post_id)) {
+			//error - what to do?
+			return false;
+		}
+		elseif ($post_id == 0) {
+			//error - what to do?
+			return false;
+		}
+		else {
+			//add custom fields here if required e.g.
+			//add_post_meta($post_id, 'object_title', $title);
+		}
+		return $post_id;
 	}
-	elseif ($post_id == 0) {
-		//error - what to do?
-		return false;
-	}
-	else {
-		//add custom fields here if required e.g.
-		//add_post_meta($post_id, 'object_title', $title);
-	}
-	return $post_id;
+	return;
 }
 
 // Function to retrieve scraped data from Designing Shakespeare database
@@ -182,10 +231,14 @@ function dsData($name){
 	    include_once( ABSPATH . WPINC. '/class-http.php' );
 	}
 	$request = new WP_Http;
-	$ds_url = "https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=jsondict&name=designing_shakespeare_cast_lists&query=select%20*%20from%20%60swdata%60%20where%20%60role%60%20like%20%22%25". $name ."%25%22";
+	$ds_query = urlencode($name);
+	$ds_url = "https://api.scraperwiki.com/api/1.0/datastore/sqlite?format=jsondict&name=designing_shakespeare_cast_lists&query=select%20*%20from%20%60swdata%60%20where%20%60role%60%20like%20%22%25". $ds_query ."%25%22";
 	$result = $request->request( $ds_url );
 	$json = $result['body'];
 	$performances = json_decode($json);
+	if(count($performances) == 0) {
+		return false;
+	}
 	$html .= "<div id='design'>";
 	$html .= ucfirst($name)." has been played by the actors listed below. The data is taken from the 'Designing Shakespeare' project which focuses on performances in London, UK. Details of the relevant performance are given here, and linked to the full record at the Designing Shakespeare site which usually includes images of the production.";
 	$html .= "<ul>";
@@ -200,11 +253,41 @@ function dsData($name){
 function wwData($name) {
 	//Going to return some html at the end
 	$html = "";
+	$play = get_option('shakespearepress-playoptions');
+	$play_name = $play['name'];
 	if( !class_exists( 'WP_Http' ) ) {
 	    include_once( ABSPATH . WPINC. '/class-http.php' );
 	}
 	$request = new WP_Http;
-	$ww_url = "";
+	$ww_query = urlencode($name." AND \"".$play_name."\"");
+	$ww_url = "http://wwsrv.edina.ac.uk/solr/metadata/select?q=".$ww_query."&wt=phps";
+	$result = $request->request( $ww_url );
+	$result_array = unserialize($result['body']);
+	$num_results = $result_array["response"]["numFound"];
+	if ($num_results == 0) {
+		// No results
+		return false;
+	} else {
+		$html .= "<div id='ww'>";
+		$html .= "<p>The following resources have been found for this character in the Will's World Registry</p>";
+		$items = $result_array["response"]["docs"];
+		foreach ($items as $item) {
+			error_log("Looping through WWR results");
+			$title = html_entity_decode($item["dc.title"][0]);
+			$desc = html_entity_decode($item["dc.description"][0]);
+			$source = html_entity_decode($item["dc.source"][0]);
+			$html .= "<p><strong>Title</strong>: <a href=\"".$source."\">".$title."</a> (Click to view)"."<br /><strong>Description</strong>: ".$desc."<br />";
+			$credits = $item["ww.credit"];
+			$html .= "(credits: ";
+			foreach ($credits as $credit) {
+				$html .= html_entity_decode($credit).", ";
+			}
+			$html = trim($html,", ");
+			$html .= ")</p>";
+		}
+		$html .= "</div>";
+	}
+	return $html;
 }
 
 function shakespearepress_plugin_menu() {
@@ -216,20 +299,23 @@ function shakespearepress_register_settings() {
 	register_setting('shakespearepress-settings', 'shakespearepress-playurl');
 	// second option will contain name of the play and the number of acts
 	register_setting('shakespearepress-settings', 'shakespearepress-playoptions');
-	// third option will contain an array of charater names
-	register_setting('shakespearepress-settings', 'shakespearepress-characters');
 	
 	add_settings_section('shakespearepress-play', 'Import Play', 'shakespearepress_playsection_text', 'shakespearepress');
-	// Need to work out fields below - play, acts, chars - just need enough to display Next buttons
+	
 	add_settings_field('playurl', 'Play to import', 'play_choice', 'shakespearepress', 'shakespearepress-play');
 	add_settings_field('playname', 'Play name', 'play_name', 'shakespearepress', 'shakespearepress-play');
 	add_settings_field('totalacts', 'Number of Acts', 'total_acts', 'shakespearepress', 'shakespearepress-play');
 	add_settings_field('currentact', 'Current Act', 'current_act', 'shakespearepress', 'shakespearepress-play');
+	add_settings_field('chars', 'Characters in the play', 'all_characters', 'shakespearepress', 'shakespearepress-play');
 }
 
 function shakespearepress_playsection_text(){
 	//Just HTML to go at top of options page
 	echo '<p>The play\'s the thing</p>';
+}
+
+function shakespearepress_charsection_test(){
+	echo '<p>The Cast of Players</p>';
 }
 
 function play_choice(){
@@ -243,8 +329,49 @@ function play_choice(){
 	} else {
 		?>
 		<select name="shakespearepress-playurl[url]">
-			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml">Much Ado About Nothing</option>
-			<option value="http://wwsrv.edina.ac.uk/wworld/static/plays/King_Lear.xml">King Lear</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Alls_Well_That_Ends_Well.xml">All's Well That Ends Well</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Antony_and_Cleopatra.xml">Antony and Cleopatra</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/As_You_Like_It.xml">As You Like It</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Comedy_of_Errors.xml">Comedy of Errors</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Coriolanus.xml">Coriolanus</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Cymbeline.xml">Cymbeline</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Hamlet.xml">Hamlet</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Henry_IV_Part_I.xml">Henry IV, Part I</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Henry_IV_Part_II.xml">Henry IV, Part II</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Henry_V.xml">Henry V</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Henry_VIII.xml">Henry VIII</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Henry_VI_Part_I.xml">Henry VI, Part I</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Henry_VI_Part_II.xml">Henry VI, Part II</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Henry_VI_Part_III.xml">Henry VI, Part III</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Julius_Caesar.xml">Julius Caesar</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/King_John.xml">King John</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/King_Lear.xml">King Lear</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Lovers_Complaint.xml">Lover's Complaint</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Loves_Labours_Lost.xml">Love's Labour's Lost</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Macbeth.xml">Macbeth</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Measure_for_Measure.xml">Measure for Measure</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Merchant_of_Venice.xml">Merchant of Venice</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Merry_Wives_of_Windsor.xml">Merry Wives of Windsor</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Midsummer_Nights_Dream.xml">Midsummer Night's Dream</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Much_Ado_about_Nothing.xml">Much Ado about Nothing</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Othello.xml">Othello</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Passionate_Pilgrim.xml">Passionate Pilgrim</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Pericles.xml">Pericles</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Phoenix_and_the_Turtle.xml">Phoenix and the Turtle</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Rape_of_Lucrece.xml">Rape of Lucrece</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Richard_II.xml">Richard II</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Richard_III.xml">Richard III</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Romeo_and_Juliet.xml">Romeo and Juliet</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Sonnets.xml">Sonnets</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Taming_of_the_Shrew.xml">Taming of the Shrew</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Tempest.xml">Tempest</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/The_Winters_Tale.xml">The Winter's Tale</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Timon_of_Athens.xml">Timon of Athens</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Titus_Andronicus.xml">Titus Andronicus</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Troilus_and_Cressida.xml">Troilus and Cressida</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Twelfth_Night.xml">Twelfth Night</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Two_Gentlemen_of_Verona.xml">Two Gentlemen of Verona</option>
+			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Venus_and_Adonis.xml">Venus and Adonis</option>
 		</select>
 		<?php		
 	}
@@ -279,32 +406,68 @@ function total_acts(){
 		$play_options = detailsofPlay();
 		$total_acts = $play_options['total_acts'];
 	} else {
-		// Do nothing
+		echo "Play not yet selected. Please click <strong>Next</strong>.";
+		return;
 	}
 	echo "This play has ".$total_acts." Acts";
 	echo "<input type=\"hidden\" name=\"shakespearepress-playoptions[total_acts]\" value=\"{$total_acts}\">";
 }
-
 function current_act() {
 	$play_options = get_option('shakespearepress-playoptions');
-	if($play_options['current_act'] == 0 && strlen($play_url['url']) > 0 || !$play_options['current_act']) {
+	$play_url = get_option('shakespearepress-playurl');
+	if($play_options['current_act'] == 0 && strlen($play_url['url']) > 0 || !$play_options['current_act'] && strlen($play_url['url']) > 0 ) {
 		// fetch first act and add one
 		$current_act = 1;
-		populatePlay($current_act);
-		echo "Fetched Act ".$current_act;
-		echo "Click Next to fetch ".$current_act + 1;
+		$next_act = 1;
+		echo "Click Next to fetch Act ".$next_act;
 	} elseif ($play_options['current_act'] < $play_options['total_acts']) {
 		$current_act = $play_options['current_act'] + 1;
+		$next_act = $current_act + 1;
 		populatePlay($current_act);
-		echo "Fetched Act ".$current_act;
-		echo "Click Next to fetch ".$current_act + 1;
+		echo "Fetched Act ".$current_act." Click Next to fetch Act ".$next_act;
+	} elseif (strlen($play_url['url']) == 0) {
+		echo "Play not yet selected. Please click <strong>Next</strong>.";
+	} elseif (!$play_options['current_act']) {
+		$current_act = 0;
+		echo "No Acts retrieved yet";
 	} else {
 		echo "All Acts have been retrieved";
 		$current_act = $play_options['current_act'];
 	}
 	echo "<input type=\"hidden\" name=\"shakespearepress-playoptions[current_act]\" value=\"{$current_act}\">";
 }
-
+function all_characters() {
+	$play_url = get_option('shakespearepress-playurl');
+	if (!$play_url) {
+		echo "Play not yet selected. Please click <strong>Next</strong>.";
+		return;
+	}
+	$play_options = get_option('shakespearepress-playoptions');
+	if (!$play_options) {
+		echo "Waiting to set options. Please click <strong>Next</strong>.";
+		return;
+	}
+	$play_name = $play_options['name'];
+	$characters = $play_options['characters'];
+	$total_acts = $play_options['total_acts'];
+	$current_acts = $play_options['current_acts'];
+	if ($total_acts > 0 && $current_acts > 0 && $current_acts <> $total_acts) {
+		"Waiting to populate play before generating character pages. Please click <strong>Next</strong>.";
+		return;
+	}
+	$char_list = $characters;
+	if(strlen($characters) == 0 && strlen($play_url['url']) > 0 && strlen($play_name) > 0 || !$characters && strlen($play_url['url']) > 0 && strlen($play_name) > 0) {
+		$characters = detailsofCharacters();
+		foreach($characters as $character) {
+			createCharacterpage($character);
+			$char_list .= $character.",";
+		}
+	} elseif (strlen($play_url['url']) == 0) {
+		echo "Play not yet selected";
+	}
+	echo "Characters: ".$char_list;
+	echo "<input type=\"hidden\" name=\"shakespearepress-playoptions[characters]\" value=\"{$char_list}\">";
+}
 // write out the plugin options form. Form field name must match option name.
 // add other options here as necessary
 // just a placeholder in case
@@ -314,17 +477,6 @@ function shakespearepress_settings_page() {
 	if (!current_user_can('manage_options'))  {
 	  wp_die( __('You do not have sufficient permissions to access this page.') );
 	}
-	// Get settings so we know what has been set and only offer to set things not yet done
-/*
-	if( isset($_POST[ 'playurl' ]) ) {
-		// suppress if play already set?
-		populatePlay($_POST[ 'playurl' ]);
-	}
-
-	if( isset($_GET[ 'createCPs' ])) {
-		createCharacterPage();
-	}
-*/	
 	?>
 	<div>
 		<h2><?php _e('ShakespearePress setup', 'shakespearepress-plugin') ?></h2>
