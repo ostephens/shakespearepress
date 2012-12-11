@@ -145,7 +145,7 @@ function populatePlay($a) {
 				error_log($name);
 				postPara($title,$name,$content,$act_no,$scene_no,$speaking);
 			}
-		echo "Finished Act {$act_no}, Scene {$scene_no}";
+		error_log("Finished Act {$act_no}, Scene {$scene_no}");
 		}
 	}	
 
@@ -426,7 +426,7 @@ function current_act() {
 		$current_act = 1;
 		$next_act = 1;
 		populatePlay($current_act);
-		echo "Click Next to fetch Act 1".$next_act;
+		echo "Click Next to fetch Act 2";
 	} elseif ($play_options['current_act'] < $play_options['total_acts']) {
 		$current_act = $play_options['current_act'] + 1;
 		$next_act = $current_act + 1;
