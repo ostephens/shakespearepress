@@ -145,6 +145,7 @@ function populatePlay($a) {
 				error_log($name);
 				postPara($title,$name,$content,$act_no,$scene_no,$speaking);
 			}
+		echo "Finished Act {$act_no}, Scene {$scene_no}";
 		}
 	}	
 
@@ -451,12 +452,16 @@ function all_characters() {
 	$play_name = $play_options['name'];
 	$characters = $play_options['characters'];
 	$total_acts = $play_options['total_acts'];
-	$current_acts = $play_options['current_acts'];
+	$current_acts = $play_options['current_act'];
 	if(!($play_name || $total_acts || $current_acts)){
 		echo "Play options not yet fully set. Please click <strong>Next</strong>.";
 		return;
 	}
-	if ($total_acts && $current_acts && $total_acts > 0 && $current_acts > 0 && $current_acts <> $total_acts) {
+	if ($current_acts = 0) {
+		echo "Play options not yet fully set. Please click <strong>Next</strong>.";
+		return;
+	}
+	if ($current_acts <> $total_acts) {
 		"Waiting to populate play before generating character pages. Please click <strong>Next</strong>.";
 		return;
 	}
