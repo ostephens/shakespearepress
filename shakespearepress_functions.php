@@ -39,6 +39,39 @@ function detailsofPlay() {
 		$acts = $doc->getElementsByTagName("Act");
 		$total_acts = $acts->length;
 		$play_opts = array( 'name'=>$play_name, 'total_acts'=>$total_acts );
+		
+		$title = "Home";
+		$author = username_exists( 'wshakespeare' );
+		$ddg_url = "http://api.duckduckgo.com/?q=".urlencode($play_name)."&format=json";
+		$result = $request->request('$ddg_url');
+		$json = $result['body'];
+		$ddg = json_decode($json);
+		$content = "<h2>Summary</h2><p>".$ddg->AbstractText."<br /><strong>Source: <a href=\"".$ddg->AbstractURL."\">".$ddg->AbstractSource."</a> via <a href=\"http://duckduckgo.com\">DuckDuckGo</a></p>";
+		$new_post = array(
+				'post_title' => $title,
+				'post_content' => convert_chars($content),
+				'post_name' => $name,
+				'post_author' => $author,
+				'post_status' => 'publish',
+				'post_type' => 'page'
+			    //Default field values will do for the rest - so we don't need to worry about these - see
+				//http://codex.wordpress.org/Function_Reference/wp_insert_post
+		);
+	
+		$post_id = wp_insert_post($new_post);
+		update_option('show_on_front','page');
+		update_option('page_on_front',$post_id);
+		if (is_object($post_id)) {
+			//error - what to do?
+		}
+		elseif ($post_id == 0) {
+			//error - what to do?
+		}
+		else {
+			//add custom fields here if required e.g.
+			//add_post_meta($post_id, 'object_title', $title);
+		}
+		
 		return $play_opts;
 	} else {
 		return false;
@@ -72,6 +105,7 @@ function detailsofCharacters() {
 		$char_array = array_unique($char_array);
 		return $char_array;
 	} else {
+		error_log("Returning false");
 		return false;
 	}
 	
@@ -445,35 +479,42 @@ function current_act() {
 }
 function all_characters() {
 	$play_options = get_option('shakespearepress-play');
-	if (!$play_options) {
+	if (!$play_options || strlen($play_options['playurl']) == 0) {
 		echo "Play options not yet set. Please click <strong>Next</strong>.";
 		return;
 	}
-	$play_name = $play_options['name'];
-	$characters = $play_options['characters'];
-	$total_acts = $play_options['total_acts'];
-	$current_acts = $play_options['current_act'];
-	if(!($play_name || $total_acts || $current_acts)){
+	if(array_key_exists('characters',$play_options)) {
+		$characters = $play_options['characters'];
+	}
+	if(array_key_exists('name',$play_options)) {
+		$play_name = $play_options['name'];
+	}
+	if(array_key_exists('total_acts',$play_options)) {
+		$total_acts = $play_options['total_acts'];
+	}
+	if(array_key_exists('current_act',$play_options)) {
+		$current_act = $play_options['current_act'];
+	}
+	if(!($play_name || $total_acts || $current_act)){
 		echo "Play options not yet fully set. Please click <strong>Next</strong>.";
 		return;
 	}
-	if ($current_acts = 0) {
+	if ($current_act == 0) {
 		echo "Play options not yet fully set. Please click <strong>Next</strong>.";
 		return;
 	}
-	if ($current_acts <> $total_acts) {
-		"Waiting to populate play before generating character pages. Please click <strong>Next</strong>.";
+	if ($current_act <> $total_acts) {
+		echo "Waiting to populate play before generating character pages. Please click <strong>Next</strong>.";
 		return;
 	}
-	$char_list = $characters;
-	if(strlen($characters) == 0 && strlen($play_options['playurl']) > 0 && strlen($play_name) > 0 || !$characters && strlen($play_options['playurl']) > 0 && strlen($play_name) > 0) {
+	if(strlen($characters) == 0 || !$characters) {
 		$characters = detailsofCharacters();
 		foreach($characters as $character) {
 			createCharacterpage($character);
 			$char_list .= $character.",";
 		}
-	} elseif (strlen($play_options['playurl']) == 0) {
-		echo "Play not yet selected";
+	} else {
+		$char_list = $characters;
 	}
 	echo $char_list;
 	echo "<input type=\"hidden\" name=\"shakespearepress-play[characters]\" value=\"{$char_list}\">";
