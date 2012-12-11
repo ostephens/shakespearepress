@@ -390,7 +390,7 @@ function play_name() {
 		// add_option('shakespearepress-playoptions',$play_options);
 		$play_name = $play_options['name'];
 	} else {
-		// Do nothing
+		echo "Play not yet selected. Please click <strong>Next</strong>.";
 	}
 	echo $play_name;
 	echo "<input type=\"hidden\" name=\"shakespearepress-playoptions[name]\" value=\"{$play_name}\">";
