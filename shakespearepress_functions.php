@@ -19,13 +19,13 @@ function createShakespeare() {
 }
 
 function detailsofPlay() {
-	$play_url = get_option('shakespearepress-playurl');
-	if ($play_url['url']) {
+	$play_options = get_option('shakespearepress-play');
+	if ($play_options['playurl']) {
 		if( !class_exists( 'WP_Http' ) ) {
 		    include_once( ABSPATH . WPINC. '/class-http.php' );
 		}
 		$request = new WP_Http;
-		$result = $request->request( $play_url['url'] );
+		$result = $request->request( $play_options['playurl'] );
 		$xml = $result['body'];
 		// Create DOMDocument and load the xml to parse
 		$doc = new DOMDocument();
@@ -48,13 +48,13 @@ function detailsofPlay() {
 
 function detailsofCharacters() {
 	$char_array = array();
-	$play_url = get_option('shakespearepress-playurl');
-	if ($play_url['url']) {
+	$play_options = get_option('shakespearepress-play');
+	if ($play_options['playurl']) {
 		if( !class_exists( 'WP_Http' ) ) {
 		    include_once( ABSPATH . WPINC. '/class-http.php' );
 		}
 		$request = new WP_Http;
-		$result = $request->request( $play_url['url'] );
+		$result = $request->request( $play_options['playurl'] );
 		$xml = $result['body'];
 		// Create DOMDocument and load the xml to parse
 		$doc = new DOMDocument();
@@ -79,12 +79,12 @@ function detailsofCharacters() {
 
 function populatePlay($a) {
 	set_time_limit(0);
-	$play_url = get_option('shakespearepress-playurl');
+	$play_options = get_option('shakespearepress-play');
 	if( !class_exists( 'WP_Http' ) ) {
 	    include_once( ABSPATH . WPINC. '/class-http.php' );
 	}
 	$request = new WP_Http;
-	$result = $request->request( $play_url['url'] );
+	$result = $request->request( $play_options['playurl'] );
 	$xml = $result['body'];
 	// Create DOMDocument and load the xml to parse
 	$doc = new DOMDocument();
@@ -253,7 +253,7 @@ function dsData($name){
 function wwData($name) {
 	//Going to return some html at the end
 	$html = "";
-	$play = get_option('shakespearepress-playoptions');
+	$play = get_option('shakespearepress-play');
 	$play_name = $play['name'];
 	if( !class_exists( 'WP_Http' ) ) {
 	    include_once( ABSPATH . WPINC. '/class-http.php' );
@@ -295,10 +295,8 @@ function shakespearepress_plugin_menu() {
 }
 
 function shakespearepress_register_settings() {
-	// first option will contain play URL
-	register_setting('shakespearepress-settings', 'shakespearepress-playurl');
-	// second option will contain name of the play and the number of acts
-	register_setting('shakespearepress-settings', 'shakespearepress-playoptions');
+
+	register_setting('shakespearepress-settings', 'shakespearepress-play');
 	
 	add_settings_section('shakespearepress-play', 'Import Play', 'shakespearepress_playsection_text', 'shakespearepress');
 	
@@ -319,16 +317,14 @@ function shakespearepress_charsection_test(){
 }
 
 function play_choice(){
-	// Only do output here if play url not already populated in settings
-	// Need to check naming here and 
-	$play_url = get_option('shakespearepress-playurl');
-	if (strlen($play_url['url']) > 0) {
+	$play_options = get_option('shakespearepress-play');
+	if ($play_options && strlen($play_options['playurl']) > 0) {
 		//may need to put hidden field in form?
-		echo "Already selected play ".$play_url['url'];
-		echo "<input type=\"hidden\" name=\"shakespearepress-playurl[url]\" value=\"{$play_url['url']}\">";
+		echo "Already selected play ".$play_options['playurl'];
+		echo "<input type=\"hidden\" name=\"shakespearepress-play[playurl]\" value=\"{$play_options['playurl']}\">";
 	} else {
 		?>
-		<select name="shakespearepress-playurl[url]">
+		<select name="shakespearepress-play[playurl]">
 			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Alls_Well_That_Ends_Well.xml">All's Well That Ends Well</option>
 			<option value="http://wwsrv.edina.ac.uk/wworld/plays/Antony_and_Cleopatra.xml">Antony and Cleopatra</option>
 			<option value="http://wwsrv.edina.ac.uk/wworld/plays/As_You_Like_It.xml">As You Like It</option>
@@ -381,28 +377,34 @@ function play_name() {
 	// If play_url is set, we can retrieve the play_name and total_acts from the xml
 	// So here check for play_name - if doesn't exist then grab the xml and get the play name
 	// If play_url not set, do nothing
-	$play_url_opts = get_option('shakespearepress-playurl');
-	$play_options = get_option('shakespearepress-playoptions');
+	$play_options = get_option('shakespearepress-play');
+	if (!$play_options) {
+		echo "Play options not yet set. Please click <strong>Next</strong>.";
+		return;
+	}
 	if (strlen($play_options['name']) > 0) {
 		$play_name = $play_options['name'];
-	} elseif ($play_url_opts['url']) {
+	} elseif ($play_options['playurl'] && strlen($play_options['playurl']) > 0) {
 		$play_options = detailsofPlay();
-		// add_option('shakespearepress-playoptions',$play_options);
+		// add_option('shakespearepress-play',$play_options);
 		$play_name = $play_options['name'];
 	} else {
 		echo "Play not yet selected. Please click <strong>Next</strong>.";
 	}
 	echo $play_name;
-	echo "<input type=\"hidden\" name=\"shakespearepress-playoptions[name]\" value=\"{$play_name}\">";
+	echo "<input type=\"hidden\" name=\"shakespearepress-play[name]\" value=\"{$play_name}\">";
 }
 function total_acts(){
 	// Check for total_acts - if doesn't exist then grab the xml and get the total acts. Should have already been set by play_name?
 	// if play_url not set, do nothing
-	$play_url_opts = get_option('shakespearepress-playurl');
-	$play_options = get_option('shakespearepress-playoptions');
+	$play_options = get_option('shakespearepress-play');
+	if (!$play_options) {
+		echo "Play options not yet set. Please click <strong>Next</strong>.";
+		return;
+	}
 	if ($play_options['total_acts']) {
 		$total_acts = $play_options['total_acts'];
-	} elseif ($play_url_opts['url']) {
+	} elseif ($play_options['playurl'] && strlen($play_options['playurl']) > 0) {
 		$play_options = detailsofPlay();
 		$total_acts = $play_options['total_acts'];
 	} else {
@@ -410,12 +412,15 @@ function total_acts(){
 		return;
 	}
 	echo "This play has ".$total_acts." Acts";
-	echo "<input type=\"hidden\" name=\"shakespearepress-playoptions[total_acts]\" value=\"{$total_acts}\">";
+	echo "<input type=\"hidden\" name=\"shakespearepress-play[total_acts]\" value=\"{$total_acts}\">";
 }
 function current_act() {
-	$play_options = get_option('shakespearepress-playoptions');
-	$play_url = get_option('shakespearepress-playurl');
-	if($play_options['current_act'] == 0 && strlen($play_url['url']) > 0 || !$play_options['current_act'] && strlen($play_url['url']) > 0 ) {
+	$play_options = get_option('shakespearepress-play');
+	if (!$play_options) {
+		echo "Play options not yet set. Please click <strong>Next</strong>.";
+		return;
+	}
+	if($play_options['current_act'] == 0 && strlen($play_options['playurl']) > 0 || !$play_options['current_act'] && strlen($play_options['playurl']) > 0 ) {
 		// fetch first act and add one
 		$current_act = 1;
 		$next_act = 1;
@@ -425,7 +430,7 @@ function current_act() {
 		$next_act = $current_act + 1;
 		populatePlay($current_act);
 		echo "Fetched Act ".$current_act." Click Next to fetch Act ".$next_act;
-	} elseif (strlen($play_url['url']) == 0) {
+	} elseif (strlen($play_options['playurl']) == 0) {
 		echo "Play not yet selected. Please click <strong>Next</strong>.";
 	} elseif (!$play_options['current_act']) {
 		$current_act = 0;
@@ -434,39 +439,34 @@ function current_act() {
 		echo "All Acts have been retrieved";
 		$current_act = $play_options['current_act'];
 	}
-	echo "<input type=\"hidden\" name=\"shakespearepress-playoptions[current_act]\" value=\"{$current_act}\">";
+	echo "<input type=\"hidden\" name=\"shakespearepress-play[current_act]\" value=\"{$current_act}\">";
 }
 function all_characters() {
-	$play_url = get_option('shakespearepress-playurl');
-	if (!$play_url) {
-		echo "Play not yet selected. Please click <strong>Next</strong>.";
-		return;
-	}
-	$play_options = get_option('shakespearepress-playoptions');
+	$play_options = get_option('shakespearepress-play');
 	if (!$play_options) {
-		echo "Waiting to set options. Please click <strong>Next</strong>.";
+		echo "Play options not yet set. Please click <strong>Next</strong>.";
 		return;
 	}
 	$play_name = $play_options['name'];
 	$characters = $play_options['characters'];
 	$total_acts = $play_options['total_acts'];
 	$current_acts = $play_options['current_acts'];
-	if ($total_acts > 0 && $current_acts > 0 && $current_acts <> $total_acts) {
+	if ($total_acts && $current_acts && $total_acts > 0 && $current_acts > 0 && $current_acts <> $total_acts) {
 		"Waiting to populate play before generating character pages. Please click <strong>Next</strong>.";
 		return;
 	}
 	$char_list = $characters;
-	if(strlen($characters) == 0 && strlen($play_url['url']) > 0 && strlen($play_name) > 0 || !$characters && strlen($play_url['url']) > 0 && strlen($play_name) > 0) {
+	if(strlen($characters) == 0 && strlen($play_options['playurl']) > 0 && strlen($play_name) > 0 || !$characters && strlen($play_options['playurl']) > 0 && strlen($play_name) > 0) {
 		$characters = detailsofCharacters();
 		foreach($characters as $character) {
 			createCharacterpage($character);
 			$char_list .= $character.",";
 		}
-	} elseif (strlen($play_url['url']) == 0) {
+	} elseif (strlen($play_options['playurl']) == 0) {
 		echo "Play not yet selected";
 	}
-	echo "Characters: ".$char_list;
-	echo "<input type=\"hidden\" name=\"shakespearepress-playoptions[characters]\" value=\"{$char_list}\">";
+	echo $char_list;
+	echo "<input type=\"hidden\" name=\"shakespearepress-play[characters]\" value=\"{$char_list}\">";
 }
 // write out the plugin options form. Form field name must match option name.
 // add other options here as necessary
