@@ -8,7 +8,12 @@ Template: clean-home
 .header {
 	padding: 5px 0 0 0;
 	background: url(images/willhack.jpg) top left no-repeat rgb(255,255,255);
-	height: 125px;
+	height: 200px;
+}
+#nav {
+	float: right;
+	width: 600px;
+	padding: 12px 0 0;
 }
 
 .post-meta {
