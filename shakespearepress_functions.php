@@ -424,7 +424,8 @@ function current_act() {
 		// fetch first act and add one
 		$current_act = 1;
 		$next_act = 1;
-		echo "Click Next to fetch Act ".$next_act;
+		populatePlay($current_act);
+		echo "Click Next to fetch Act 1".$next_act;
 	} elseif ($play_options['current_act'] < $play_options['total_acts']) {
 		$current_act = $play_options['current_act'] + 1;
 		$next_act = $current_act + 1;
@@ -451,6 +452,10 @@ function all_characters() {
 	$characters = $play_options['characters'];
 	$total_acts = $play_options['total_acts'];
 	$current_acts = $play_options['current_acts'];
+	if(!($play_name || $total_acts || $current_acts)){
+		echo "Play options not yet fully set. Please click <strong>Next</strong>.";
+		return;
+	}
 	if ($total_acts && $current_acts && $total_acts > 0 && $current_acts > 0 && $current_acts <> $total_acts) {
 		"Waiting to populate play before generating character pages. Please click <strong>Next</strong>.";
 		return;
