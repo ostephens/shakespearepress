@@ -18,15 +18,30 @@ function cleanhome_theme_setup() {
 	add_theme_support( 'automatic-feed-links' );
 
 	// Background
-	add_custom_background();
+	add_theme_support('custom-background');
 
 	// Header Image
 	define( 'HEADER_IMAGE', '' );
 	define( 'HEADER_IMAGE_WIDTH', 900 );
 	define( 'HEADER_IMAGE_HEIGHT', 200 );
 	define( 'HEADER_TEXTCOLOR', ' ' );
-
-	add_custom_image_header( 'cleanhome_header_style', 'cleanhome_admin_header_style', 'cleanhome_admin_header_image' );
+	
+	$defaults = array(
+		'default-image'          => '',
+		'random-default'         => false,
+		'width'                  => 900,
+		'height'                 => 200,
+		'flex-height'            => false,
+		'flex-width'             => false,
+		'default-text-color'     => '',
+		'header-text'            => true,
+		'uploads'                => true,
+		'wp-head-callback'       => 'cleanhome_header_style',
+		'admin-head-callback'    => 'cleanhome_admin_header_style',
+		'admin-preview-callback' => '',
+	);
+	add_theme_support( 'custom-header', $defaults);
+//	add_custom_image_header( 'cleanhome_header_style', 'cleanhome_admin_header_style', 'cleanhome_admin_header_image' );
 
 	add_action( 'init', 'cleanhome_register_menus' );
 
