@@ -26,6 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
+global $wp_version, $wpdb, $wp_theme_directories;
 // Path to ShakespearePress plugin
 if ( !defined( 'SP_PLUGIN_DIR' ) ) {
 	define( 'SP_PLUGIN_DIR', WP_PLUGIN_DIR . '/shakespearepress' );
@@ -42,14 +43,12 @@ register_activation_hook(__FILE__,'shakespearepress_install');
 
 function shakespearepress_install() {
   // do stuff when installed
-  global $wp_version;
+  global $wpdb, $wp_version, $wp_theme_directories;
   if (version_compare($wp_version, "3", "<")) {
     deactivate_plugins(basename(__FILE__)); // deactivate plugin
     wp_die("This plugin requires WordPress Version 3 or higher.");
   } else {
-	register_theme_directory( SP_PLUGIN_DIR . '/sp-themes' );
-	switch_theme( 'clean-home', 'clean-home' );
-	switch_theme( 'clean-home-sp', 'clean-home-sp' );
+	switch_theme( 'clean-home', 'clean-home-sp' );
 	createShakespeare();
  }
 }
@@ -60,7 +59,7 @@ register_deactivation_hook(__FILE__,'shakespearepress_uninstall');
 function shakespearepress_uninstall() {
 	set_time_limit(0);
 	wp_delete_user( username_exists( 'wshakespeare' ));
-	switch_theme( 'twentyten','twentyten');
+	switch_theme( WP_DEFAULT_THEME, WP_DEFAULT_THEME);
 	delete_option( 'shakespearepress-play' );
 	delete_option( 'theme_mods_clean-home' );
 }
