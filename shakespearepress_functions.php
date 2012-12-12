@@ -43,7 +43,7 @@ function detailsofPlay() {
 		$title = "Summary";
 		if (get_page_by_title($title) == NULL) {
 			$author = username_exists( 'wshakespeare' );
-			$ddg_url = "http://api.duckduckgo.com/?q=".urlencode($play_name)."&format=json";
+			$ddg_url = "http://api.duckduckgo.com/?q=".urlencode($play_name)."%20play&format=json";
 			$result = $request->request($ddg_url);
 			$json = $result['body'];
 			$ddg = json_decode($json);
