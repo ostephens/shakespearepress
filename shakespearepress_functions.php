@@ -314,6 +314,7 @@ function wwData($name) {
 			$title = html_entity_decode($item["dc.title"][0]);
 			$desc = html_entity_decode($item["dc.description"][0]);
 			$source = html_entity_decode($item["dc.source"][0]);
+			$html .= "<div id='resource'>";
 			if($thumbnail) {
 				$html .= "<img src=\"".$thumbnail."\" alt=\"".$title."\" align=\"left\">";
 			}
@@ -325,6 +326,7 @@ function wwData($name) {
 			}
 			$html = trim($html,", ");
 			$html .= ")</p>";
+			$html .= "</div>";
 		}
 		$html .= "</div>";
 	}
