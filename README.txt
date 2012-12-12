@@ -12,3 +12,5 @@ Activate the plugin via the Wordpress admin console
 After you have activated the plugin go to 'Settings' and you should see a new menu item labelled 'ShakespearePress settings'
 On this screen you can choose a play
 Click the 'Next' button until all parts of the screen have completed (the final thing is the list of characters will display). If you encounter "500" errors in your browser during the process you should be able to simply refresh the page to continue - the script will attempt to pickup where it left off
+Once the list of characters displays on this screen you should be all done - although the Next button still shows, it does perform any useful function once the process has finished.
+You should now have a wordpress blog populated with the text of the play, pages for each of the main characters and a summary page
