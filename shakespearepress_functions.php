@@ -310,9 +310,13 @@ function wwData($name) {
 		$items = $result_array["response"]["docs"];
 		foreach ($items as $item) {
 			error_log("Looping through WWR results");
+			$thumbnail = html_entity_decode($item["ww.thumbnail-url"][0]);
 			$title = html_entity_decode($item["dc.title"][0]);
 			$desc = html_entity_decode($item["dc.description"][0]);
 			$source = html_entity_decode($item["dc.source"][0]);
+			if($thumbnail) {
+				$html .= "<img src=\"".$thumbnail."\" alt=\"".$title."\" align=\"left\">";
+			}
 			$html .= "<p><strong>Title</strong>: <a href=\"".$source."\">".$title."</a> (Click to view)"."<br /><strong>Description</strong>: ".$desc."<br />";
 			$credits = $item["ww.credit"];
 			$html .= "(credits: ";
@@ -468,7 +472,7 @@ function current_act() {
 		$next_act = $current_act + 1;
 		populatePlay($current_act);
 		if($next_act > $play_options['total_acts']) {
-			echo "Fetched Act ".$current_act."All Acts now populated.";			
+			echo "Fetched Act ".$current_act." All Acts now populated.";			
 		} else {
 			echo "Fetched Act ".$current_act.". Click <strong>Next</strong> to fetch Act ".$next_act;
 		}
