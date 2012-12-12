@@ -48,6 +48,42 @@ function detailsofPlay() {
 			$json = $result['body'];
 			$ddg = json_decode($json);
 			$content = "<p>".$ddg->AbstractText."<br /><strong>Source: <a href=\"".$ddg->AbstractURL."\">".$ddg->AbstractSource."</a> via <a href=\"http://duckduckgo.com\">DuckDuckGo</a></p>";
+			$oxpods_url = "http://rss.oucs.ox.ac.uk/engfac/approachingshakespeare-audio/itunesu.xml";
+			$result = $request->request($oxpods_url);
+			$rss = $result['body'];
+			$doc = new DOMDocument();
+			$doc->loadXML($rss);
+
+			// Create DOMXPath object so we can use XPath queries
+			$xpath = new DOMXPath($doc);
+			$xpath->registerNameSpace('atom', 'http://www.w3.org/2005/Atom');
+			$xpath->registerNameSpace('creativeCommons', 'http://backend.userland.com/creativeCommonsRssModule');
+			$xpath->registerNameSpace('dc', 'http://purl.org/dc/elements/1.1/');
+			$xpath->registerNameSpace('ev', 'http://purl.org/rss/1.0/modules/event/');
+			$xpath->registerNameSpace('geo', 'http://www.w3.org/2003/01/geo/wgs84_pos#');
+			$xpath->registerNameSpace('itunes', 'http://www.itunes.com/dtds/podcast-1.0.dtd');
+			$xpath->registerNameSpace('itunesu', 'http://www.itunesu.com/feed');
+			$xpath->registerNameSpace('media', 'http://search.yahoo.com/mrss/');
+			$xpath->registerNameSpace('s', 'http://purl.org/steeple');
+			
+			$xpath_title = "./title";
+			$xpath_summary = "./itunes:summary";
+			$xpath_link = "./link";
+			$oxpod_html = "";
+			$items = $doc->getElementsByTagName("item");
+			foreach($items as $item) {
+				$oxpod_title = $xpath->evaluate($xpath_title,$item)->item(0)->nodeValue;
+				$oxpod_summary = $xpath->evaluate($xpath_summary,$item)->item(0)->nodeValue;
+				$oxpod_link = $xpath->evaluate($xpath_link,$item)->item(0)->nodeValue;
+				if (strtolower($oxpod_title) == strtolower($play_name) ) {
+					$oxpod_html .= "<h3><a href=\"{$oxpod_link}\">Oxford Podcast for {$oxpod_title}</a></h3><p>{$oxpod_summary}</p>";
+				} elseif (strtolower($oxpod_title) == strtolower($play_name." (eBook)")) {
+					$oxpod_html .= "<h3><a href=\"{$oxpod_link}\">Oxford eBook for {$play_name}</a></h3><p>{$oxpod_summary}</p>";
+				}
+			}
+			
+			$content .= $oxpod_html;
+			
 			$new_post = array(
 					'post_title' => $title,
 					'post_content' => convert_chars($content),
